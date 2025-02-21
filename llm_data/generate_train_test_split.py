@@ -16,16 +16,6 @@ SUBSETS = {"Big-Bench-Hard" : ["boolean_expressions", "causal_judgement", "date_
                   "MuSR" : ["musr_murder_mysteries", "musr_object_placements", "musr_team_allocation"]
                   }
 
-SUBSETS = {"Big-Bench-Hard" : ["boolean_expressions", "causal_judgement", "date_understanding", "disambiguation_qa", "formal_fallacies", "geometric_shapes", "hyperbaton", "logical_deduction_five_objects",
-                  "logical_deduction_seven_objects", "logical_deduction_three_objects", "movie_recommendation", "navigate", "object_counting", "penguins_in_a_table", "reasoning_about_colored_objects",
-                  "ruin_names", "salient_translation_error_detection", "snarks", "sports_understanding", "temporal_sequences", "tracking_shuffled_objects_five_objects", "tracking_shuffled_objects_seven_objects",
-                  "tracking_shuffled_objects_three_objects", "web_of_lies"], 
-                  "IFEVAL" : ["IFEVAL"], 
-                  "MATH-LvL-5" : ["algebra_hard", "counting_and_prob_hard", "geometry_hard", "intermediate_algebra_hard", "num_theory_hard", "prealgebra_hard", "precalculus_hard"], 
-                  "MMLU-Pro" : ["MMLU-Pro"],
-                  "MuSR" : ["musr_murder_mysteries", "musr_object_placements", "musr_team_allocation"]
-                  }
-
 def _load_prompts(bm: str) -> pd.DataFrame:
     """
     Loads in the prompts for a particular benchmark, concatenating all subsets. This is a helper function for `load_all_prompts`. We recommend using that instead.
