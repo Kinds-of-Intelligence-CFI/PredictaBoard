@@ -8,7 +8,8 @@ from typing import List, Tuple, Dict
 from warnings import warn
 
 DATA_FOLDER_LOCATION = os.path.join(".", "data")
-MMLU_PRO_OPENAI_RESULTS_LOCATION = os.path.join("..", "..", "data", "open-llm-leaderboard-v2", "computed_embeddings", "mmlu_pro_prompts_with_openai_embeddings.json")
+MMLU_PRO_OPENAI_RESULTS_LOCATION = os.path.join(DATA_FOLDER_LOCATION, "open-llm-leaderboard-v2", "computed_embeddings", "mmlu_pro_prompts_with_openai_embeddings.json")
+BBH_OPENAI_RESULTS_LOCATION = os.path.join(DATA_FOLDER_LOCATION, "data", "open-llm-leaderboard-v2", "computed_embeddings")
 
 def load_csv_pairs(prompt_files: List[str], result_files: List[str]) -> List[Tuple[pd.DataFrame, pd.DataFrame]]:
     """
@@ -119,6 +120,17 @@ def process_benchmarks(selected_llm: str = "migtissera__Tess-v2.5.2-Qwen2-72B", 
     results_files = sorted(glob.glob(os.path.join(data_folder_location, "open-llm-leaderboard-v2", "*_results.csv")))
     results_files = [r for r in results_files if os.path.basename(r) != "leaderboard_aggregate_results.csv"]
     results = process(prompt_files, results_files, selected_llm, test_size=0.2, seed=1997)
+    # Merge BBH results. TODO: Make this less of a hack
+    for benchmark in list(results.keys()):
+        if benchmark[:4] == "bbh_":
+            for split in ['train', 'val', 'test']:
+                results[benchmark][split]['id'] = results[benchmark][split]['id'].astype(str) + "_" + benchmark[4:]
+                # Put everything in "test", since we're using it for OOD
+                if "bbh" in results:
+                    results["bbh"]["test"] = pd.concat([results["bbh"]["test"], results[benchmark][split]], ignore_index=True)
+                else:
+                    results["bbh"] = {"test": results[benchmark][split]}
+            del results[benchmark]
     return results
 
 # Code below is for reformatting the benchmark result for use in the embeddings assessors notebook # TODO: Unify the schemas we use so we have to do less transformation
@@ -280,16 +292,41 @@ def load_open_llm_v2(llms: List[str], train_dataset_name: str, test_dataset_name
                 add_simple_embeddings(output_df, embedding_model=embedding_model)
             # Add OpenAI embeddings
             print(f"Adding OpenAI embeddings")
-            open_ai_embeddings_df = pd.read_json(MMLU_PRO_OPENAI_RESULTS_LOCATION)
-            # Make sure question ID columns have the same type
-            output_df['question_id'] = output_df['question_id'].astype(str)
-            open_ai_embeddings_df['id'] = open_ai_embeddings_df['id'].astype(str)
-            # Add OpenAI embedding for each prompt
-            output_df = pd.merge(output_df, open_ai_embeddings_df, left_on="question_id", right_on="id", how="left")
-            # Double check the id => prompt mapping is the same in both datasets (note the newlines are different so they need a bit of handling)
-            assert (output_df['prompt_x'].str.replace(chr(13), '').replace(chr(10), '') == output_df['prompt_y'].str.replace(chr(13), '').replace(chr(10), '')).all(), "Mismatch between prompts in datasets"
-            # Tidy up the duplicate prompt column now that we've checked it
-            output_df = output_df.drop(columns=['prompt_y']).rename(columns={'prompt_x': 'prompt'})
+            if dataset_name == "mmlu_pro":
+                open_ai_embeddings_df = pd.read_json(MMLU_PRO_OPENAI_RESULTS_LOCATION)
+                # # Make sure question ID columns have the same type
+                output_df['question_id'] = output_df['question_id'].astype(str)
+                open_ai_embeddings_df['id'] = open_ai_embeddings_df['id'].astype(str)
+                # # Add OpenAI embedding for each prompt
+                output_df = pd.merge(output_df, open_ai_embeddings_df, left_on="question_id", right_on="id", how="left")
+                # Double check the id => prompt mapping is the same in both datasets (note the newlines are different so they need a bit of handling)
+                assert (output_df['prompt_x'].str.replace(chr(13), '').replace(chr(10), '') == output_df['prompt_y'].str.replace(chr(13), '').replace(chr(10), '')).all(), "Mismatch between prompts in datasets"
+                # # Tidy up the duplicate prompt column now that we've checked it
+                output_df = output_df.drop(columns=['prompt_y']).rename(columns={'prompt_x': 'prompt'})
+            elif dataset_name == "bbh":
+                output_df["id"] = output_df["question_id"].apply(lambda x: x.split("_")[0])
+                output_df["bbh_subset"] = output_df["question_id"].apply(lambda x: "_".join(x.split("_")[1:]))
+
+                output_df['id'] = output_df['id'].astype(int)
+                output_df['bbh_subset'] = output_df['bbh_subset'].astype(str)
+
+                for bbh_subset in output_df["bbh_subset"].unique():
+                    # print(bbh_subset)
+                    open_ai_embeddings_df = pd.read_json(os.path.join(BBH_OPENAI_RESULTS_LOCATION, f"bbh_{bbh_subset}_prompts_with_openai_embeddings.json"))
+                    # # Make sure question ID columns have the same type
+                    open_ai_embeddings_df['id'] = open_ai_embeddings_df['id'].astype(int)
+                    # # Add OpenAI embedding for each prompt, only for the subset with the considered bbh_subset
+                    output_df_subset = output_df[output_df["bbh_subset"] == bbh_subset]
+                    if "openai_embeddings" in output_df.columns:
+                        output_df_subset = output_df_subset.drop(columns=["openai_embeddings"])
+
+                    output_df_subset = pd.merge(output_df_subset.reset_index(), open_ai_embeddings_df, left_on="id", right_on="id", how="left").set_index("index")
+                    # now put back in the original dataframe
+                    # output_df = output_df.join()
+                    output_df.loc[output_df_subset.index, "openai_embeddings"] = output_df_subset["openai_embeddings"]
+
+            else:
+                raise NotImplementedError("Embeddings loading not yet implemented for this dataset")
         output_dfs.append(output_df)
     train_df, validation_df, test_df = output_dfs
 
