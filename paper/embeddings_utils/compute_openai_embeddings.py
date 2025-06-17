@@ -30,8 +30,8 @@ data_folder_location = os.path.join("../../data", "open-llm-leaderboard-v2")
 results_folder_location = os.path.join(data_folder_location, "computed_embeddings")
 
 # the first line if you want to only run the MMLU Pro prompts, otherwise it runs all of them
-prompt_files = sorted(glob.glob(os.path.join(data_folder_location, "mmlu_pro_prompts.csv")))
-# prompt_files = sorted(glob.glob(os.path.join(data_folder_location, "*_prompts.csv")))
+# prompt_files = sorted(glob.glob(os.path.join(data_folder_location, "mmlu_pro_prompts.csv")))
+prompt_files = sorted(glob.glob(os.path.join(data_folder_location, "*_prompts.csv")))
 
 prompts_dfs = [pd.read_csv(prompt) for prompt in prompt_files]
 
