@@ -1,3 +1,4 @@
 paper/results/mmlu_pro_assessor_results.pkl filter=lfs diff=lfs merge=lfs -text
 paper/data/open-llm-leaderboard-v2/computed_embeddings/mmlu_pro_prompts_with_openai_embeddings.json filter=lfs diff=lfs merge=lfs -text
 paper/results/bbh_assessor_results_full.pkl filter=lfs diff=lfs merge=lfs -text
+*.pkl filter=lfs diff=lfs merge=lfs -text
