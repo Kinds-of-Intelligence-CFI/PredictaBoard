@@ -1,11 +1,15 @@
 # LLM Data
 
 This directory contains the results of several Large Language Models on the following benchmarks:
+* MMLU-Pro
 * Big-Bench-Hard
 * IFEVAL
 * MATH-LvL-5
-* MMLU-Pro
 * MuSR
+
+In the paper, MMLU-Pro was used to train the assessors and Big-Bench-Hard was used to evaluate their OOD performance. However we also include results on other datasets here to allow people to conduct other OOD tests.
+
+The LLM results were obtained from Huggingface's Open-LLM-Leaderboard-v2. Moreover, GPT-4 results for MMLU-Pro are also present.
 
 The code in this directory was developed in a conda environment using the specifications in `environment.yml`.
 
