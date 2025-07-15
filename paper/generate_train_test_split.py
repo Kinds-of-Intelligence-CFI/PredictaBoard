@@ -7,9 +7,10 @@ from sklearn.model_selection import train_test_split
 from typing import List, Tuple, Dict
 from warnings import warn
 
-DATA_FOLDER_LOCATION = os.path.join(".", "data")
-MMLU_PRO_OPENAI_RESULTS_LOCATION = os.path.join(DATA_FOLDER_LOCATION, "open-llm-leaderboard-v2", "computed_embeddings", "mmlu_pro_prompts_with_openai_embeddings.json")
-BBH_OPENAI_RESULTS_LOCATION = os.path.join(DATA_FOLDER_LOCATION, "data", "open-llm-leaderboard-v2", "computed_embeddings")
+DATA_FOLDER_LOCATION = os.path.join("..", "llm_data", "llm_performance_data",)
+PROMPTS_FOLDER_LOCATION = os.path.join(".", "data") # TODO: Probably move that stuff too
+MMLU_PRO_OPENAI_RESULTS_LOCATION = os.path.join(PROMPTS_FOLDER_LOCATION, "open-llm-leaderboard-v2", "computed_embeddings", "mmlu_pro_prompts_with_openai_embeddings.json")
+BBH_OPENAI_RESULTS_LOCATION = os.path.join(PROMPTS_FOLDER_LOCATION, "data", "open-llm-leaderboard-v2", "computed_embeddings")
 
 def load_csv_pairs(prompt_files: List[str], result_files: List[str]) -> List[Tuple[pd.DataFrame, pd.DataFrame]]:
     """
@@ -115,9 +116,9 @@ def process(
         raise RuntimeError("No results found")
 
 
-def process_benchmarks(selected_llm: str = "migtissera__Tess-v2.5.2-Qwen2-72B", data_folder_location = DATA_FOLDER_LOCATION) -> Dict[str, Dict[str, pd.DataFrame]]:
-    prompt_files = sorted(glob.glob(os.path.join(data_folder_location, "open-llm-leaderboard-v2", "*_prompts.csv")))
-    results_files = sorted(glob.glob(os.path.join(data_folder_location, "open-llm-leaderboard-v2", "*_results.csv")))
+def process_benchmarks(selected_llm: str = "migtissera__Tess-v2.5.2-Qwen2-72B") -> Dict[str, Dict[str, pd.DataFrame]]:
+    prompt_files = sorted(glob.glob(os.path.join(PROMPTS_FOLDER_LOCATION, "open-llm-leaderboard-v2", "*_prompts.csv")))
+    results_files = sorted(glob.glob(os.path.join(DATA_FOLDER_LOCATION, "*_results.csv")))
     results_files = [r for r in results_files if os.path.basename(r) != "leaderboard_aggregate_results.csv"]
     results = process(prompt_files, results_files, selected_llm, test_size=0.2, seed=1997)
     # Merge BBH results. TODO: Make this less of a hack
@@ -277,7 +278,7 @@ def load_open_llm_v2(llms: List[str], train_dataset_name: str, test_dataset_name
         output_df = pd.DataFrame(columns=columns)
         # Add a success column for each LLM of interest
         for llm in llms:
-            benchmark_data = process_benchmarks(llm, data_folder_location=DATA_FOLDER_LOCATION)
+            benchmark_data = process_benchmarks(llm)
             try:
                 llm_df = benchmark_data[dataset_name][dataset_kind]
             except KeyError as e:
