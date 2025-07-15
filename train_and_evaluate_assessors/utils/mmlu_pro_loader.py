@@ -15,8 +15,8 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_classif
 from tqdm import tqdm
 
-from embeddings_utils.embedding import Embedder
-from embeddings_utils.results_loaders import (
+from utils.embedding import Embedder
+from utils.results_loaders import (
     ResultsLoader,
     _finalize_train_validation_test_dfs,
 )

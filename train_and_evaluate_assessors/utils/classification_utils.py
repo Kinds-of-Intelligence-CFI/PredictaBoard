@@ -7,7 +7,7 @@ from xgboost import XGBClassifier
 
 from typing import List, Tuple
 
-from embeddings_utils.utils import save_dataframe
+from utils.general_utils import save_dataframe
 
 
 # --- GENERIC FUNCTIONS ---

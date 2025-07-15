@@ -2,7 +2,7 @@ import glob
 import os
 
 import pandas as pd
-from embeddings_utils.embedding import Embedder
+from utils.embedding import Embedder
 from sklearn.model_selection import train_test_split
 from typing import List, Tuple, Dict
 from warnings import warn

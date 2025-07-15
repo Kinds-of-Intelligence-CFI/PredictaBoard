@@ -14,8 +14,8 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_classif
 from tqdm import tqdm
 
-from embeddings_utils.embedding import Embedder
-from embeddings_utils.embedding import extract_openai_embeddings as extract_openai_embeddings_fcn
+from utils.embedding import Embedder
+from utils.embedding import extract_openai_embeddings as extract_openai_embeddings_fcn
 
 tqdm.pandas()
 

@@ -3,7 +3,7 @@ import os
 
 import pandas as pd
 from dotenv import load_dotenv
-from embeddings_utils.embedding import extract_openai_embeddings
+from utils.embedding import extract_openai_embeddings
 
 
 def save_processed(filename, results_df, compression=False, compression_kwargs=None):

@@ -4,7 +4,7 @@ import pandas as pd
 import os
 from scipy.integrate import simpson
 
-from embeddings_utils.utils import load_with_conditions
+from utils.general_utils import load_with_conditions
 
 from typing import List, Tuple, Callable
 
